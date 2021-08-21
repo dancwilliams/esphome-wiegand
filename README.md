@@ -2,7 +2,7 @@
 Simple ESPHome Wiegand custom component
 
 Based on this code:
-https://github.com/Luisiado/wiegand_esphome_module
+https://github.com/avwuff/esphome-wiegand
 
 To use:
 1. Drop wiegand_device.h into your esphome/ directory
