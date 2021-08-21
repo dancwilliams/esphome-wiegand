@@ -148,7 +148,7 @@ class WiegandReader : public PollingComponent, public TextSensor {
         
                             // TODO: Handle validation failure case!
                         cardID = getCardId (&_cardTempHigh, &_cardTemp, _bitCount);
-                        if ( cardID==11)
+                        if ( (cardID==11) || (cardID==10) )
                         {
                             json_message(keyCodes);
                             keyCodes = "";
