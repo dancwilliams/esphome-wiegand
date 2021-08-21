@@ -43,7 +43,7 @@ class WiegandReader : public PollingComponent, public Sensor {
                     // We have a keyCode, see if the interdigit timer expired
                     if(millis() - lastCode > 2000) {
                         // The interdigit timer expired, send the code and reset for the next string
-                        json_message(keyCodes);
+                        json_message2(keyCodes);
                         keyCodes = "";
                     }
                 }
@@ -151,7 +151,9 @@ class WiegandReader : public PollingComponent, public Sensor {
         
                             // TODO: Handle validation failure case!
                         cardID = getCardId (&_cardTempHigh, &_cardTemp, _bitCount);
-                        json_message2(cardID);
+                        ESP_LOGD("custom", "Card read inside DoWiegandCoversion: %ld", cardID);
+                        keyCodes.append(cardID);
+                        //json_message2(cardID);
                         _wiegandType=_bitCount;
                         _bitCount=0;
                         _cardTemp=0;
