@@ -8,7 +8,7 @@
  * Implemented by Luis Millan for RFID reader with wiegand protocol
  */
 
-class WiegandReader : public PollingComponent, public Sensor {
+class WiegandReader : public PollingComponent, public TextSensor {
 
     public:
         WiegandReader(int pinD0, int pinD1): PollingComponent(200), pinD0(pinD0), pinD1(pinD1) { }
@@ -43,7 +43,7 @@ class WiegandReader : public PollingComponent, public Sensor {
                     // We have a keyCode, see if the interdigit timer expired
                     if(millis() - lastCode > 2000) {
                         // The interdigit timer expired, send the code and reset for the next string
-                        json_message2(keyCodes);
+                        json_message(keyCodes);
                         keyCodes = "";
                     }
                 }
@@ -68,16 +68,13 @@ class WiegandReader : public PollingComponent, public Sensor {
          * Calls a Home Assistant service with the key code
          * @param keyCode
          */
-        void json_message(std::string keyCode) { // Better use json_message2 i have some troubles with .c_str
-            ESP_LOGD("custom", "Got a card read");
-        }
-
-        void json_message2(unsigned long valueID) {
-            ESP_LOGD("custom", "Card read: %ld", valueID);
+        void json_message(std::string keyCode) {
+            ESP_LOGD("custom", "Card or Keycode Read: %s", keyCode.c_str());
 
             // publish this as a new state
-            publish_state(valueID);
-        }     
+            publish_state(keyCode.c_str());
+        }
+    
         /**
          * D0 Interrupt Handler
          */
@@ -151,9 +148,14 @@ class WiegandReader : public PollingComponent, public Sensor {
         
                             // TODO: Handle validation failure case!
                         cardID = getCardId (&_cardTempHigh, &_cardTemp, _bitCount);
-                        ESP_LOGD("custom", "Card read inside DoWiegandCoversion: %ld", cardID);
-                        keyCodes.append(cardID);
-                        //json_message2(cardID);
+                        if ( cardID==11)
+                        {
+                            json_message(keyCodes);
+                            keyCodes = "";
+                        } else {
+                            keyCodes = keyCodes + esphome::to_string(cardID);
+                        }
+                        // json_message2(cardID);
                         _wiegandType=_bitCount;
                         _bitCount=0;
                         _cardTemp=0;

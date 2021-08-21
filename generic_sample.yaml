@@ -24,20 +24,17 @@ api:
 
 ota:
 
-sensor:
+text_sensor:
 - platform: custom
   lambda: |-
-    auto wiegand = new WiegandReader(D1, D2);
+    auto wiegand = new WiegandReader(D6, D7);
     App.register_component(wiegand);
     return {wiegand};
 
-  sensors:
+  text_sensors:
     name: "Card ID"
     on_value:
       then:
         - homeassistant.tag_scanned: !lambda |-
-            char buf[16];
-            sprintf(buf, "%.0f", x);
-            std::string s = buf;
-            return s;        
+            return x;      
             
