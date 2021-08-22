@@ -31,6 +31,19 @@ wifi:
 
 captive_portal:
 
+sensor:
+# Reports the WiFi signal strength
+- platform: wifi_signal
+  name: ${friendly_name} Signal
+  update_interval: 60s
+
+# Reports how long the device has been powered (in minutes)
+- platform: uptime
+  name: ${friendly_name} Uptime
+  filters:
+    - lambda: return x / 60.0;
+  unit_of_measurement: minutes
+
 text_sensor:
 - platform: custom
   lambda: |-
@@ -38,25 +51,41 @@ text_sensor:
     App.register_component(wiegand);
     return {wiegand};
   text_sensors:
-    name: "Card ID"
+    name: "${friendly_name} Card ID"
     on_value:
       then:
         - homeassistant.tag_scanned: !lambda |-
             return x;
 
-switch:
+binary_sensor:
+  - platform: status
+    name: "${friendly_name} Status"
   - platform: gpio
-    pin: GPIO4
-    id: button
-    name: "Gate Controller Button"
-    on_turn_on:
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "${friendly_name} Button"
+    device_class: door
+    filters:
+      - delayed_on: 10ms
+    on_press:
     - switch.turn_on: relay
-    - delay: 500ms
-    - switch.turn_off: relay
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "${friendly_name} Doorbell"
+    device_class: occupancy
+    filters:
+      - delayed_on: 10ms
+
+switch:
   - platform: gpio
     pin: GPIO5
     id: relay
-    name: "Gate Remote"
+    name: "${friendly_name} Remote"
     icon: "mdi:gate"
     on_turn_on:
     - delay: 1000ms
@@ -64,6 +93,3 @@ switch:
 
 status_led:
   pin: GPIO2
-
-web_server:
-  port: 80
